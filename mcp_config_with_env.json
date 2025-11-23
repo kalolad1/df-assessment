@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "healthcare-mcp": {
-      "command": "npx",
-      "args": ["healthcare-mcp"]
-    }
-  }
-}

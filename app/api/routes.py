@@ -8,12 +8,17 @@ from app.schemas.document import (
     DocumentResponse,
 )
 from app.schemas.extract_structured import ExtractStructuredRequest, ExtractStructuredResponse
+from app.schemas.fhir_conversion import FHIRConversionRequest, FHIRConversionResponse
 from app.schemas.summarization import SummarizeRequest, SummarizeResponse
 from app.services.answer_question_service import AnswerQuestionService, get_answer_question_service
 from app.services.document_service import create_document, get_all_documents
 from app.services.extract_structured_service import (
     ExtractStructuredService,
     get_extract_structured_service,
+)
+from app.services.fhir_conversion_service import (
+    FHIRConversionService,
+    get_fhir_conversion_service,
 )
 from app.services.summarization_service import SummarizationService, get_summarization_service
 
@@ -88,5 +93,53 @@ async def extract_structured(
     payload: ExtractStructuredRequest,
     service: ExtractStructuredService = Depends(get_extract_structured_service),
 ) -> ExtractStructuredResponse:
-    structured_data = service.extract_structured(payload.data)
+    structured_data = await service.extract_structured(payload.data)
     return ExtractStructuredResponse(structured_data=structured_data)
+
+
+@router.post("/convert_to_fhir", response_model=FHIRConversionResponse)
+async def convert_to_fhir(
+    payload: FHIRConversionRequest,
+    service: FHIRConversionService = Depends(get_fhir_conversion_service),
+) -> FHIRConversionResponse:
+    """Convert structured medical data to FHIR-compliant resources.
+
+    This endpoint accepts structured medical data (from the extract_structured endpoint)
+    and converts it to FHIR R4 resources packaged in a Bundle.
+
+    The conversion creates the following FHIR resources:
+    - Patient: Demographics (name, age)
+    - Condition: Medical conditions and diagnoses with ICD-10 codes
+    - Procedure: Treatments with ICD-10 procedure codes
+    - MedicationStatement: Medications with RxNorm codes
+
+    Args:
+        payload: Request containing the structured medical data to convert
+
+    Returns:
+        JSON response with a FHIR Bundle containing all resources
+
+    Example:
+        POST /convert_to_fhir
+        {
+            "structured_data": {
+                "name": "John Doe",
+                "age": 45,
+                "conditions": [...],
+                "diagnoses": [...],
+                "treatments": [...],
+                "medications": [...]
+            }
+        }
+
+        Response:
+        {
+            "fhir_bundle": {
+                "resourceType": "Bundle",
+                "type": "collection",
+                "entry": [...]
+            }
+        }
+    """
+    fhir_bundle = service.convert_to_fhir(payload.structured_data)
+    return FHIRConversionResponse(fhir_bundle=fhir_bundle)

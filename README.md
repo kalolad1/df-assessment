@@ -2,77 +2,6 @@
 
 A FastAPI backend application for document management with LLM-powered medical note summarization.
 
-## Features
-
-- **Document Management**: Create and retrieve medical documents
-- **LLM Summarization**: AI-powered summarization of medical notes using Pydantic AI
-- **Async/Await**: Fully asynchronous using SQLAlchemy async and FastAPI
-- **Type Safety**: Strict type checking with Pyright
-- **Comprehensive Testing**: Full test coverage with pytest
-
-## Tech Stack
-
-- **Framework**: FastAPI 0.115+
-- **Database**: SQLite with async driver (aiosqlite)
-- **ORM**: SQLAlchemy 2.0 (async)
-- **AI Integration**: Pydantic AI Gateway
-- **Testing**: pytest with pytest-asyncio
-- **Linting**: Ruff, Pyright
-- **Package Manager**: uv
-
-## Setup
-
-### Prerequisites
-
-- Python 3.12+
-- [uv](https://github.com/astral-sh/uv) package manager
-
-### Installation
-
-1. Clone the repository and navigate to the project directory
-
-2. Install dependencies:
-   ```bash
-   uv sync
-   ```
-
-3. Configure environment variables:
-
-   Create/update `.env` file with:
-   ```bash
-   # Database
-   DATABASE_URL=sqlite+aiosqlite:///./data/app.db
-
-   # Pydantic AI Gateway API Key
-   PYDANTIC_AI_GATEWAY_API_KEY=your_api_key_here
-   ```
-
-   **Getting a Pydantic AI Gateway API Key:**
-   - Visit [Pydantic AI Documentation](https://docs.pydantic.dev/)
-   - Sign up for an API key
-   - The gateway provides unified access to multiple LLM providers (OpenAI, Anthropic, etc.)
-   - Add the key to your `.env` file as shown above
-
-## Running the Application
-
-### Development Server
-
-Start the development server with hot reload:
-
-```bash
-make run
-# or
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-The API will be available at `http://localhost:8000`
-
-### API Documentation
-
-Once the server is running:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
 ## API Endpoints
 
 ### Health Check
@@ -116,15 +45,166 @@ Content-Type: application/json
 ```json
 {
   "summary": "Patient diagnosed with acute bronchitis. Prescribed antibiotics and rest. Follow-up in 1 week.",
-  "original_length": 245,
-  "summary_length": 85
 }
 ```
 
-**Error Handling:**
-- `400 Bad Request`: Empty or invalid content
-- `500 Internal Server Error`: LLM API authentication or general errors
-- `503 Service Unavailable`: Rate limits or timeouts
+## Docker Deployment
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) 20.10+
+- [Docker Compose](https://docs.docker.com/compose/install/) 2.0+
+
+### Setup
+
+1. **Configure Environment Variables**
+
+   Copy the example environment file and add your API keys:
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` and replace the placeholder values with your actual API keys:
+   ```bash
+   # Database URLs
+   ASYNC_DATABASE_URL=sqlite+aiosqlite:///./data/app.db
+   SYNC_DATABASE_URL=sqlite:///./data/app.db
+   
+   # Required API keys
+   PYDANTIC_AI_GATEWAY_API_KEY=your_actual_key_here
+   OPENAI_API_KEY=your_actual_key_here
+   ```
+
+2. **Build the Docker Image**
+
+   ```bash
+   docker-compose build
+   ```
+
+   This will:
+   - Use multi-stage build for optimized image size
+   - Install all dependencies using UV package manager
+   - Create a non-root user for security
+   - Set up health checks
+
+3. **Start the Services**
+
+   ```bash
+   docker-compose up
+   ```
+
+   Or run in detached mode:
+   ```bash
+   docker-compose up -d
+   ```
+
+   The API will be available at `http://localhost:8000`
+
+4. **View Logs**
+
+   ```bash
+   docker-compose logs -f fastapi-app
+   ```
+
+5. **Stop the Services**
+
+   ```bash
+   docker-compose down
+   ```
+
+   To remove volumes as well:
+   ```bash
+   docker-compose down -v
+   ```
+
+### Testing the Deployment
+
+Once the container is running, test the endpoints:
+
+**Health Check:**
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+```json
+{"status": "healthy"}
+```
+
+**List Documents:**
+```bash
+curl http://localhost:8000/documents
+```
+
+**Create a Document:**
+```bash
+curl -X POST http://localhost:8000/documents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Patient Visit Note",
+    "content": "Patient presents with fever and cough."
+  }'
+```
+
+**Summarize Medical Note:**
+```bash
+curl -X POST http://localhost:8000/summarize_note \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Patient presents with persistent cough, fever, and chest discomfort. Physical examination reveals wheezing and crackling sounds in lungs. Diagnosed with acute bronchitis. Prescribed azithromycin 500mg daily for 5 days and advised bed rest."
+  }'
+```
+
+**Answer Medical Question:**
+```bash
+curl -X POST http://localhost:8000/answer_question \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What are the common side effects of azithromycin?"
+  }'
+```
+
+**Extract Structured Data:**
+```bash
+curl -X POST http://localhost:8000/extract_structured \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": "Patient: John Doe, Age: 45, Diagnosis: Type 2 Diabetes, Medication: Metformin 500mg twice daily"
+  }'
+```
+
+**Convert to FHIR:**
+```bash
+curl -X POST http://localhost:8000/convert_to_fhir \
+  -H "Content-Type: application/json" \
+  -d '{
+    "structured_data": {
+      "name": "John Doe",
+      "age": 45,
+      "conditions": [],
+      "diagnoses": [
+        {
+          "name": "Type 2 Diabetes",
+          "icd_code": "E11.9"
+        }
+      ],
+      "treatments": [],
+      "medications": [
+        {
+          "name": "Metformin",
+          "rx_norm_code": "860975"
+        }
+      ]
+    }
+  }'
+```
+
+### Database Persistence
+
+The SQLite database is stored in the `./data` directory, which is mounted as a volume. This means:
+- Database persists across container restarts
+- Fixtures are loaded automatically on first run
+- You can backup the database by copying the `./data` directory
 
 ## Development
 
@@ -148,44 +228,6 @@ make test
 uv run pytest -v
 ```
 
-Run tests with coverage:
-```bash
-uv run pytest --cov=app --cov-report=html
-```
-
-## Architecture
-
-### Service Layer
-
-The application uses a service layer pattern:
-
-- **Database Layer** (`app/db/`): Handles raw database operations
-- **Service Layer** (`app/services/`): Contains business logic
-  - `document.py`: Document management logic
-  - `summarization.py`: LLM integration with Pydantic AI
-
-### LLM Integration
-
-The summarization service uses **Pydantic AI Gateway**:
-
-1. **Agent Configuration**: Configured with OpenAI-compatible provider pointing to Pydantic AI Gateway
-2. **System Prompt**: Custom prompt optimized for medical document summarization
-3. **Error Handling**: Comprehensive error handling for API failures, rate limits, and timeouts
-4. **Type Safety**: Full type hints and Pydantic validation
-
-Key features:
-- Medical-specific summarization prompts
-- Preserves critical medical information
-- Maintains terminology accuracy
-- Async operation (non-blocking)
-
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | SQLite database connection string | Yes |
-| `PYDANTIC_AI_GATEWAY_API_KEY` | Pydantic AI Gateway API key | Yes |
-
 ## Makefile Commands
 
 ```bash
@@ -195,14 +237,3 @@ make test       # Run tests
 make lint       # Format and lint code
 make clean      # Remove cache and test databases
 ```
-
-## Security Notes
-
-- API keys are loaded from environment variables (never hardcoded)
-- The `.env` file should never be committed to version control
-- Use `.gitignore` to exclude sensitive files
-- In production, use proper secrets management (e.g., AWS Secrets Manager, HashiCorp Vault)
-
-## License
-
-Proprietary - Deerfield Assessment Project
