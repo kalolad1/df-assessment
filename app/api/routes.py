@@ -7,9 +7,14 @@ from app.schemas.document import (
     DocumentCreate,
     DocumentResponse,
 )
+from app.schemas.extract_structured import ExtractStructuredRequest, ExtractStructuredResponse
 from app.schemas.summarization import SummarizeRequest, SummarizeResponse
 from app.services.answer_question_service import AnswerQuestionService, get_answer_question_service
-from app.services.document import create_document, get_all_documents
+from app.services.document_service import create_document, get_all_documents
+from app.services.extract_structured_service import (
+    ExtractStructuredService,
+    get_extract_structured_service,
+)
 from app.services.summarization_service import SummarizationService, get_summarization_service
 
 router = APIRouter()
@@ -76,3 +81,12 @@ async def answer_question(
 ) -> AnswerQuestionResponse:
     answer = await service.answer_question(payload.question)
     return AnswerQuestionResponse(answer=answer)
+
+
+@router.post("/extract_structured", response_model=ExtractStructuredResponse)
+async def extract_structured(
+    payload: ExtractStructuredRequest,
+    service: ExtractStructuredService = Depends(get_extract_structured_service),
+) -> ExtractStructuredResponse:
+    structured_data = service.extract_structured(payload.data)
+    return ExtractStructuredResponse(structured_data=structured_data)

@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     openai_api_key: str
     pydantic_ai_gateway_api_key: str
+    fda_api_key: str
 
 
 settings = Settings()  # type: ignore[call-arg]

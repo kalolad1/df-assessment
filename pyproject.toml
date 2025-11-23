@@ -16,6 +16,7 @@ dependencies = [
     "faiss-cpu>=1.7.4",
     "sentence-transformers>=2.2.0",
     "numpy>=1.24.0",
+    "pydantic-ai-slim[duckduckgo]>=1.22.0",
 ]
 
 [project.optional-dependencies]

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import AsyncSessionLocal
 from app.models.document import Document
-from app.services.document import create_document
+from app.services.document_service import create_document
 
 
 async def load_fixtures_from_json(file_path: Path) -> list[dict[str, str]]:

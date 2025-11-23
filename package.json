@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "dicom-parser": "^1.8.21",
+    "healthcare-mcp": "^2.1.1"
+  }
+}

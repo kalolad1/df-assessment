@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.session import AsyncSessionLocal, sync_engine
 from app.models.document import Document
-from app.services.document import get_document
+from app.services.document_service import get_document
 
 
 class AnswerQuestionService:
