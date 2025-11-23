@@ -76,9 +76,7 @@ class FHIRConversionService:
 
         return patient
 
-    def _create_condition_resources(
-        self, structured_data: StructuredData, patient_id: str
-    ) -> list[Condition]:
+    def _create_condition_resources(self, structured_data: StructuredData, patient_id: str) -> list[Condition]:
         """
         Create FHIR Condition resources from structured data.
 
@@ -162,9 +160,7 @@ class FHIRConversionService:
 
         return conditions
 
-    def _create_procedure_resources(
-        self, structured_data: StructuredData, patient_id: str
-    ) -> list[Procedure]:
+    def _create_procedure_resources(self, structured_data: StructuredData, patient_id: str) -> list[Procedure]:
         """
         Create FHIR Procedure resources from structured data.
 

@@ -83,8 +83,9 @@ async def summarize_note(
 async def answer_question(
     payload: AnswerQuestionRequest,
     service: AnswerQuestionService = Depends(get_answer_question_service),
+    db: AsyncSession = Depends(get_db),
 ) -> AnswerQuestionResponse:
-    answer = await service.answer_question(payload.question)
+    answer = await service.answer_question(payload.question, db=db)
     return AnswerQuestionResponse(answer=answer)
 
 

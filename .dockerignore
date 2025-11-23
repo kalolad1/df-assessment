@@ -49,6 +49,9 @@ docs/
 *.db-shm
 *.db-wal
 
+# Data files
+data/
+
 # Logs
 *.log
 
@@ -60,3 +63,23 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+node_modules/
+
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.venv
+**/node_modules
+.git
+data
+*.dicom
+*.dcm
+*.log
+*.tmp
+dist
+build

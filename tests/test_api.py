@@ -62,10 +62,7 @@ async def test_create_document_validation_missing_field(client: AsyncClient) -> 
 @pytest.mark.asyncio
 async def test_summarize_note_success(client: AsyncClient) -> None:
     """Test successful medical note summarization."""
-    mock_summary = (
-        "Patient diagnosed with acute bronchitis. "
-        "Prescribed antibiotics and rest. Follow-up in 1 week."
-    )
+    mock_summary = "Patient diagnosed with acute bronchitis. Prescribed antibiotics and rest. Follow-up in 1 week."
     mock_summarization_service = AsyncMock(spec=SummarizationService)
     mock_summarization_service.summarize.return_value = mock_summary
     app.dependency_overrides[get_summarization_service] = lambda: mock_summarization_service

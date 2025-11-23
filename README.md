@@ -89,6 +89,26 @@ curl -X POST http://localhost:8000/answer_question \
   }'
 ```
 
+**Test for cache hit, supported by semantic prompt caching:**
+
+```bash
+curl -X POST http://localhost:8000/answer_question \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What are the side effects of azithromycin?"
+  }'
+```
+
+**Test for cache miss, despite lexically similar question:**
+
+```bash
+curl -X POST http://localhost:8000/answer_question \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What are the side effects of ticagrelor?"
+  }'
+```
+
 **Extract Structured Data:**
 ```bash
 curl -X POST http://localhost:8000/extract_structured \

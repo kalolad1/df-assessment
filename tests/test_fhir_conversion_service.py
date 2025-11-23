@@ -73,11 +73,7 @@ def test_convert_to_fhir_creates_condition_resources(
 
     # Check one condition in detail
     hyperlipidemia = next(
-        (
-            e["resource"]
-            for e in condition_entries
-            if e["resource"]["code"]["text"] == "Hyperlipidemia"
-        ),
+        (e["resource"] for e in condition_entries if e["resource"]["code"]["text"] == "Hyperlipidemia"),
         None,
     )
     assert hyperlipidemia is not None
@@ -126,9 +122,7 @@ def test_convert_to_fhir_creates_medication_resources(
 
     # Find all MedicationStatement resources
     entries = result["entry"]
-    medication_entries = [
-        e for e in entries if e["resource"]["resourceType"] == "MedicationStatement"
-    ]
+    medication_entries = [e for e in entries if e["resource"]["resourceType"] == "MedicationStatement"]
 
     # Should have 1 medication
     assert len(medication_entries) == 1
@@ -138,10 +132,7 @@ def test_convert_to_fhir_creates_medication_resources(
     assert "id" in medication
     assert medication["status"] == "recorded"
     assert medication["medication"]["concept"]["text"] == "Simvastatin 10mg"
-    assert (
-        medication["medication"]["concept"]["coding"][0]["system"]
-        == "http://www.nlm.nih.gov/research/umls/rxnorm"
-    )
+    assert medication["medication"]["concept"]["coding"][0]["system"] == "http://www.nlm.nih.gov/research/umls/rxnorm"
     assert medication["medication"]["concept"]["coding"][0]["code"] == "36567"
     assert "subject" in medication
     assert medication["subject"]["reference"].startswith("Patient/")
